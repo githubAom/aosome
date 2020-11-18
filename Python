@@ -1,1 +1,194 @@
+from msvcrt import getch,kbhit
+#import numpy as np
+from os import startfile
+#from subprocess import Popen
+#from time import sleep
 
+def firstExe():
+    try:
+        #尝试打开路径文本，若打不开，就执行except
+        f=open("paths.txt","r",encoding='utf-8')
+        f.close()
+    except Exception:
+        #创建两个字符串数组
+        names=[]
+        paths=[]
+        #尝试新建两个文本文件
+        with open("paths.txt","w",encoding='utf-8') as f:
+            f.write('1')
+            f.close()
+        with open("names.txt","w",encoding='utf-8')as f:
+            f.write('1')
+            f.close()
+        
+        print("\t欢迎使用快捷命令")
+        print("输入样例（名字和路径）：python文件夹 D:\\acPython\n")
+        #输入七个文件及其路径
+        num=input("请输入需要创建的命令条数（不得超过35）：")
+        for i in range(0,int(num)):
+            names,paths=updatePaths(i,names,paths)
+        #将信息写入文件
+        writeFiles(names,paths)
+        print('写入成功，按任意键退出，再次打开就可以使用了')
+        getch()
+        exit(0)
+
+    #打开的话就打印提示信息
+    names,paths=readFiles()
+    printTitle(names)
+    exeCmd(names,paths)
+
+def printTitle(names):
+    print('请选择：')
+    num=1
+    '''循环打印目录名字'''
+    for name in names:
+        if num<=9:
+            print(str(num)+"、"+name)
+        else:
+            print(str(num+87)+"、"+name)
+        num+=1
+    print('x、自定义选项')
+    print('y、新建一条路径')
+    print('z、quit')
+
+
+def readFiles():
+    '''with open ("paths.txt","w",encoding='utf-8') as f:
+        f.write(r'D:\aa我的文件')
+        f.write('\n')
+        f.write(r'D:\acPython')
+        f.close'''
+    '''读取路径和名称并存入字符串数组'''
+    with open ("paths.txt","r",encoding='utf-8') as f:
+        str1=f.read()
+        #str1.strip()
+        paths=str1.split('\n')
+        #print(paths)
+        '''剔除最后一个空白行'''
+        paths.pop()
+        f.close()
+    with open ("names.txt","r",encoding='utf-8') as f:
+        str1=f.read()
+        #str1.strip()
+        names=str1.split('\n')
+        '''剔除最后一个空白行'''
+        names.pop()
+        f.close()
+
+    return names,paths
+
+
+def updatePaths(first,names,paths):
+    '''first为0~6的时候输入7个文件路径并存入数组
+        为-1的时候，是执行命令8的修改已存在的路径'''
+    if first!=-1:
+        '''提示信息，到第几个'''
+        tips=str(first+1)+"、名字和路径(执行文件名字请加'.')："
+        str1=input(tips)
+        name, path=str1.split(' ')
+        names.append(name)
+        paths.append(path)
+        return names,paths
+    else:
+        tip1="请输入数字、名字和路径(执行文件名字请加'.')，"
+        tip2="用空格隔开\n例：3 p文件 D:\\acPython\n"
+        str1=input(tip1+tip2)
+
+    '''修改第几条命令'''
+    try:
+        n,name,path=str1.split(' ',2)
+    except:
+        str1=input("别闹，改bug很辛苦的，重新输入：")
+        '''try:
+            n,name,path=str1.split(' ',2)
+        except:
+            input=("告辞！")
+            exit(0)'''
+    n,name,path=str1.split(' ',2)
+    while int(n)>len(names):
+        str1=input("别闹，改bug很辛苦的，重新输入：")
+        n,name,path=str1.split(' ',2)
+
+    names[int(n)-1]=name
+    paths[int(n)-1]=path
+    '''修改后重新写入文件保存'''
+    writeFiles(names,paths)
+    print('更新成功...请重新选择：')
+    '''重新读取文件信息并打印目录'''
+    names,paths=readFiles()
+    printTitle(names)
+    exeCmd(names,paths)
+
+def addPaths(names,paths):
+    tip1="请输入名字和路径(执行文件名字请加'.')，"
+    tip2="用空格隔开\n例：p文件 D:\\acPython\n"
+    str1=input(tip1+tip2)
+    name,path=str1.split(' ',1)
+    names.append(name)
+    paths.append(path)
+    writeFiles(names,paths)
+    print('更新成功...请重新选择：')
+    '''重新读取文件信息并打印目录'''
+    names,paths=readFiles()
+    printTitle(names)
+    exeCmd(names,paths)
+
+'''写入文件'''
+def writeFiles(names, paths):
+    with open("names.txt","w",encoding='utf-8') as f:
+        for name in names:
+            f.write(name)
+            f.write('\n')
+        f.close()
+
+    with open("paths.txt","w",encoding='utf-8') as f:
+        for path in paths:
+            f.write(path)
+            f.write('\n')
+        f.close()
+    
+
+'''打开文件，不分执行还是文件夹，打开后退出程序'''
+def openFile(num,names,paths):
+    try:
+        startfile(paths[num])
+        
+    except:
+        print("请核对路径:"+paths[num])
+        print("请重新选择：")
+        return
+    exit(0)
+
+
+def exeCmd(names,paths):
+    num=0
+    while True:
+        ch=getch()
+        '''num=bytes.decode(ch)
+        if num=='a':
+            ch=getch()
+            num=bytes.decode(ch)'''
+        '''#getch()得到的b'x'字符，ch[0]是x的ascii值'''
+        if ch[0]>=48 and ch[0]<=57:
+            num=ch[0]-48
+        elif ch[0] >=65 and ch[0] <=90:
+            num=ch[0]-55
+        elif ch[0] >=97 and ch[0] <= 122:
+            num=ch[0]-87
+        
+        #num=33
+        '''如果按下1~7数字键'''
+        if num>0 and num<=len(names):
+            openFile(num-1,names,paths)
+        elif num==33:
+            updatePaths(-1,names,paths)
+        elif num==34:
+            addPaths(names,paths)
+        elif num==35:
+            exit(0)
+        else:
+            print("选择无效，请重新选择：")
+            
+ 
+firstExe()
